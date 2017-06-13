@@ -2,6 +2,6 @@
 build
 tags
 .editorconfig
-.swp
+*.swp
 sandbox
 term2_sim_linux
