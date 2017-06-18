@@ -1,5 +1,6 @@
 #ifndef PID_H
 #define PID_H
+#include <uWS/uWS.h>
 
 class PID {
 public:
@@ -41,6 +42,8 @@ public:
   * Calculate the total PID error.
   */
   double TotalError();
+
+  void Restart(uWS::WebSocket<uWS::SERVER> ws);
 };
 
 #endif /* PID_H */
