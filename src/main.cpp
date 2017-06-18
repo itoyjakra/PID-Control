@@ -28,30 +28,16 @@ std::string hasData(std::string s) {
   return "";
 }
 
-int main()
+void RunStep(uWS::WebSocket<uWS::SERVER> ws, PID pid, char *data, size_t length)
 {
-  uWS::Hub h;
-
-  PID pid;
-  // TODO: Initialize the pid variable.
-  double kp = 0.1;
-  double ki = 0.0;
-  double kd = 0.6;
-  std::cout << " K values before init: " << pid.Kp << " " << pid.Ki << " " << pid.Kd << std::endl;
-  pid.Init(kp, ki, kd);
-  std::cout << " K values after init: " << pid.Kp << " " << pid.Ki << " " << pid.Kd << std::endl;
-
-  h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
-    // "42" at the start of the message means there's a websocket message event.
-    // The 4 signifies a websocket message
-    // The 2 signifies a websocket event
     if (length && length > 2 && data[0] == '4' && data[1] == '2')
     {
       auto s = hasData(std::string(data).substr(0, length));
       if (s != "") {
         auto j = json::parse(s);
         std::string event = j[0].get<std::string>();
-        if (event == "telemetry") {
+        if (event == "telemetry") 
+        {
           // j[1] is the data JSON object
           double cte = std::stod(j[1]["cte"].get<std::string>());
           double speed = std::stod(j[1]["speed"].get<std::string>());
@@ -79,13 +65,51 @@ int main()
           std::cout << msg << std::endl;
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
         }
-      } else {
+      } 
+      else 
+      {
         // Manual driving
         std::string msg = "42[\"manual\",{}]";
         ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
       }
     }
+}
+
+
+int main()
+{
+  uWS::Hub h;
+
+  PID pid;
+  // TODO: Initialize the pid variable.
+  double kp = 0.1;
+  double ki = 0.0;
+  double kd = 0.6;
+  std::cout << " K values before init: " << pid.Kp << " " << pid.Ki << " " << pid.Kd << std::endl;
+  pid.Init(kp, ki, kd);
+  std::cout << " K values after init: " << pid.Kp << " " << pid.Ki << " " << pid.Kd << std::endl;
+
+  std::cout << "000000000000000 getting into onMessage \n";
+  int counter = 0;
+  h.onMessage([&pid, &counter](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) 
+  {
+    // "42" at the start of the message means there's a websocket message event.
+    // The 4 signifies a websocket message
+    // The 2 signifies a websocket event
+    RunStep(ws, pid, data, length);
+    counter++;
+    if (counter > 200)  // restart run with new parameters
+    {
+        pid.Restart(ws);
+        double kp = 0.1;
+        double ki = 0.0;
+        double kd = 0.6;
+        pid.Init(kp, ki, kd);
+        std::cout << "restarting the run \n";
+        counter = 0;
+    }
   });
+
 
   // We don't need this since we're not using HTTP but if it's removed the program
   // doesn't compile :-(
