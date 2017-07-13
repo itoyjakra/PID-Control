@@ -21,7 +21,6 @@ void PID::Init(double kp, double ki, double kd)
     Kp = kp;
     Ki = ki;
     Kd = kd;
-    std::cout << " K values in init: " << Kp << " " << Ki << " " << Kd << std::endl;
 }
 
 void PID::UpdateError(double cte) 
@@ -33,4 +32,3 @@ void PID::UpdateError(double cte)
 
 double PID::TotalError() {
 }
-
