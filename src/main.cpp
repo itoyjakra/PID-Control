@@ -2,6 +2,7 @@
 #include <iostream>
 #include "json.hpp"
 #include "PID.h"
+#include "PID_SPEED.h"
 #include <math.h>
 
 // for convenience
@@ -33,14 +34,20 @@ int main()
   uWS::Hub h;
 
   PID pid;
-  // TODO: Initialize the pid variable.
+  PID_SPEED spid;
+
   double kp = 0.2; //0.1;
   double ki = 0.0001; // 0.0;
   double kd = 1.5; //0.6;
-  double target_throttle = 0.6;
-  pid.Init(kp, ki, kd);
 
-  h.onMessage([&pid, &target_throttle](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+  double target_t = 0.6;
+  double min_t = 0.1;
+  double f = 3.0;
+
+  pid.Init(kp, ki, kd);
+  spid.Init(min_t, target_t, f);
+
+  h.onMessage([&pid, &spid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
@@ -61,10 +68,12 @@ int main()
           steer_value = - pid.Kp * pid.p_error - pid.Ki * pid.i_error - pid.Kd * pid.d_error;
 
           // Modify throttle value based on steering angle
-          throttle_value = target_throttle - 3.0 * fabs(steer_value);
+          spid.UpdateThrottle(steer_value);
+          throttle_value = spid.throttle;
+          //throttle_value = target_throttle - 3.0 * fabs(steer_value);
           // Stop vehicle from getting stuck
-          if (throttle_value < 0.1)
-              throttle_value = 0.1;
+          //if (throttle_value < 0.1)
+              //throttle_value = 0.1;
           
           // DEBUG
           std::cout << " K values: " << pid.Kp << " " << pid.Ki << " " << pid.Kd << std::endl;
