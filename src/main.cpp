@@ -69,9 +69,6 @@ int main()
 
           pid.UpdateError(cte);
           steer_value = pid.GetSteeringValue(speed);
-          //steer_value = - pid.Kp * pid.p_error - pid.Ki * pid.i_error - pid.Kd * pid.d_error;
-          //if (speed > 0.1)
-          //steer_value = steer_value * 25 / speed;
 
           // Modify throttle value based on steering angle
           spid.UpdateThrottle(steer_value);
