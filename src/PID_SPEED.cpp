@@ -18,7 +18,7 @@ void PID_SPEED::Init(double min, double target, double sf)
     steering_factor = sf;
 }
 
-void PID_SPEED::UpdateThrottle(double steering_angle) 
+void PID_SPEED::UpdateThrottle(double steering_angle)
 {
     throttle = throttle_target - steering_factor * fabs(steering_angle);
     if (throttle < throttle_min) throttle = throttle_min;

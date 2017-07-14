@@ -12,11 +12,13 @@ PID::PID()
 
 PID::~PID() {}
 
-void PID::Init(double kp, double ki, double kd) 
+void PID::Init(double kp, double ki, double kd, double sf, double sc)
 {
     Kp = kp;
     Ki = ki;
     Kd = kd;
+    speed_factor = sf;
+    speed_cutoff = sc;
 }
 
 void PID::UpdateError(double cte) 
@@ -26,4 +28,10 @@ void PID::UpdateError(double cte)
     p_error = cte;
 }
 
-double PID::TotalError() {}
+double PID::GetSteeringValue(double speed)
+{
+    double steer_value = - Kp * p_error - Ki * i_error - Kd * d_error;
+    if (speed > speed_cutoff) steer_value = steer_value * speed_factor / speed;
+
+    return steer_value;
+}

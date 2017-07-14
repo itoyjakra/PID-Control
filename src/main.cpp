@@ -44,7 +44,10 @@ int main()
   double min_t = 0.1;
   double f = 3.0;
 
-  pid.Init(kp, ki, kd);
+  double sf = 25;
+  double sc = 0.001;
+
+  pid.Init(kp, ki, kd, sf, sc);
   spid.Init(min_t, target_t, f);
 
   h.onMessage([&pid, &spid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
@@ -65,15 +68,14 @@ int main()
           double steer_value, throttle_value;
 
           pid.UpdateError(cte);
-          steer_value = - pid.Kp * pid.p_error - pid.Ki * pid.i_error - pid.Kd * pid.d_error;
+          steer_value = pid.GetSteeringValue(speed);
+          //steer_value = - pid.Kp * pid.p_error - pid.Ki * pid.i_error - pid.Kd * pid.d_error;
+          //if (speed > 0.1)
+          //steer_value = steer_value * 25 / speed;
 
           // Modify throttle value based on steering angle
           spid.UpdateThrottle(steer_value);
           throttle_value = spid.throttle;
-          //throttle_value = target_throttle - 3.0 * fabs(steer_value);
-          // Stop vehicle from getting stuck
-          //if (throttle_value < 0.1)
-              //throttle_value = 0.1;
           
           // DEBUG
           std::cout << " K values: " << pid.Kp << " " << pid.Ki << " " << pid.Kd << std::endl;

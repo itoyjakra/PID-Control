@@ -11,15 +11,18 @@ public:
   double Ki;
   double Kd;
 
+  double speed_factor;
+  double speed_cutoff;
+
   PID();
 
   virtual ~PID();
 
-  void Init(double Kp, double Ki, double Kd);
+  void Init(double kp, double ki, double kd, double sf, double sc);
 
   void UpdateError(double cte);
 
-  double TotalError();
+  double GetSteeringValue(double speed);
 };
 
 #endif /* PID_H */
